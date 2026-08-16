@@ -7,7 +7,7 @@ var userID = "";                    // REQUIRED: Set UUID env variable
 var proxyIP = "cdn-b100.xn--b6gac.eu.org";      // Fallback ProxyIP
 
 // 🔗 သင့် GitHub ပေါ်က PROXYIP.txt ရဲ့ Raw Link ကို ဒီနေရာမှာ ထည့်ပါ
-var githubProxyURL = "https://raw.githubusercontent.com/gprox-galaxy/Gproxy-domaip/refs/heads/main/PROXYIP.txt";
+var githubProxyURL = "https://raw.githubusercontent.com/proxzero/galaxy-subdomain/refs/heads/main/PROXYIP.txt";
 
 // DoH Provider URL
 var dohURL = "https://cloudflare-dns.com/dns-query";
@@ -17,10 +17,25 @@ function isValidUUID(uuid) {
     return uuidRegex.test(uuid);
 }
 
-// GitHub မှ Proxy IP များ ဆွဲယူပေးမည့် Function
-async function getDynamicProxyIP(defaultProxy, rawUrl) {
+// ============================================
+// Hybrid Proxy IP Pool (Local Fast Safe List)
+// ============================================
+const DEFAULT_LOCAL_PROXIES = [
+    "cdn-b100.xn--b6gac.eu.org",
+    "cdn.xn--b6gac.eu.org",
+    "bpb.yousef.isegaro.com",
+    "icook.hk",
+    "icook.tw",
+    "www.visa.com.sg"
+];
+
+// In-memory active proxy cache pool (Hybrid)
+let activeProxyPool = [...DEFAULT_LOCAL_PROXIES];
+
+// GitHub & Local Hybrid Proxy IP Function
+async function getHybridProxyIP(defaultProxy, rawUrl) {
     if (!rawUrl || rawUrl.includes("YOUR_USERNAME")) {
-        return defaultProxy;
+        return activeProxyPool[Math.floor(Math.random() * activeProxyPool.length)] || defaultProxy;
     }
     try {
         const response = await fetch(rawUrl, {
@@ -28,18 +43,21 @@ async function getDynamicProxyIP(defaultProxy, rawUrl) {
         });
         if (response.ok) {
             const text = await response.text();
-            const ipList = text.split('\n')
+            const fetchedIPs = text.split('\n')
                 .map(line => line.trim())
                 .filter(line => line.length > 0 && !line.startsWith('#'));
             
-            if (ipList.length > 0) {
-                return ipList[Math.floor(Math.random() * ipList.length)];
+            if (fetchedIPs.length > 0) {
+                activeProxyPool = Array.from(new Set([...fetchedIPs, ...DEFAULT_LOCAL_PROXIES]));
+                if (defaultProxy && !activeProxyPool.includes(defaultProxy)) {
+                    activeProxyPool.unshift(defaultProxy);
+                }
             }
         }
     } catch (err) {
-        console.error("GitHub ProxyIP Fetch Error:", err);
+        console.warn("GitHub ProxyIP Fetch Error, falling back to local pool:", err);
     }
-    return defaultProxy;
+    return activeProxyPool[Math.floor(Math.random() * activeProxyPool.length)] || defaultProxy;
 }
 
 var worker_default = {
@@ -178,10 +196,10 @@ async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawCli
     }
 
     async function retry() {
-        // Dynamic Proxy IP ကို GitHub မှ ဆွဲယူမည်
-        const activeProxy = await getDynamicProxyIP(proxyIP, githubProxyURL);
+        // Hybrid Proxy IP (Local Fast Safe List + GitHub Cache)
+        const activeProxy = await getHybridProxyIP(proxyIP, githubProxyURL);
         const target = activeProxy || addressRemote;
-        log(`Retrying connection via ProxyIP: ${target}`);
+        log(`Retrying connection via Hybrid ProxyIP: ${target}`);
         
         const tcpSocket2 = await connectAndWrite(target, portRemote);
         tcpSocket2.closed.catch((error) => {
