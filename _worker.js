@@ -4,10 +4,10 @@ import { connect } from "cloudflare:sockets";
 // ENV VARIABLES (Set in Cloudflare Dashboard)
 // ============================================
 var userID = "";                    // REQUIRED: Set UUID env variable
-var proxyIP = "cdn-b100.xn--b6gac.eu.org";      // Fallback ProxyIP
+var proxyIP = "Hetznerhetzner.com";      // Fallback ProxyIP
 
 // 🔗 သင့် GitHub ပေါ်က PROXYIP.txt ရဲ့ Raw Link ကို ဒီနေရာမှာ ထည့်ပါ
-var githubProxyURL = "https://raw.githubusercontent.com/proxzero/galaxy-subdomain/refs/heads/main/PROXYIP.txt";
+var githubProxyURL = "";
 
 // DoH Provider URL
 var dohURL = "https://cloudflare-dns.com/dns-query";
@@ -21,12 +21,12 @@ function isValidUUID(uuid) {
 // Hybrid Proxy IP Pool (Local Fast Safe List)
 // ============================================
 const DEFAULT_LOCAL_PROXIES = [
-    "cdn-b100.xn--b6gac.eu.org",
-    "cdn.xn--b6gac.eu.org",
-    "bpb.yousef.isegaro.com",
-    "icook.hk",
-    "icook.tw",
-    "www.visa.com.sg"
+    "lelouch.abrdns.com",
+    "62.149.188.200",
+    "130.61.227.173",
+    "92.223.84.84",
+    "213.133.116.44",
+    "Vultrvultr.com"
 ];
 
 // In-memory active proxy cache pool (Hybrid)
