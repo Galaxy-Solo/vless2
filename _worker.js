@@ -10,7 +10,7 @@ var proxyIP = "Hetznerhetzner.com";      // Fallback ProxyIP
 var githubProxyURL = "";
 
 // DoH Provider URL
-var dohURL = "https://cloudflare-dns.com/dns-query";
+var dohURL = ["https://cloudflare-dns.com/dns-query";"https://dns.alidns.com/dns-query"]
 
 function isValidUUID(uuid) {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
