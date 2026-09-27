@@ -8,7 +8,9 @@ keep_vars = true
 
 [vars]
 #UUID = ""
-WS_PATH = "galaxy-tunnel"
+
 PROXYIP = "Hetznerhetzner.com"
 
-DNS_RESOLVER_URL = "https://cloudflare-dns.com/dns-query"
+DNS_RESOLVER_URL = ["https://cloudflare-dns.com/dns-query",
+"https://dns.alidns.com/dns-query"]
+  
